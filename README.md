@@ -17,6 +17,59 @@ Q(next) = T ⊕ Q   (Q(next) = Q if T = 0, Q(next) = Q' if T = 1)
 ## Design / RTL Program
 
 ## Testbench Program
+// gedit tb5.v
+ 
+module tb5;
+    reg  clk, rst, D, T;
+    wire Qd, Qt;
+ 
+    // Instantiate the D Flip-Flop
+    dff dff_uut (
+        .clk(clk),
+        .rst(rst),
+        .D(D),
+        .Q(Qd)
+    );
+ 
+    // Instantiate the T Flip-Flop
+    tff tff_uut (
+        .clk(clk),
+        .rst(rst),
+        .T(T),
+        .Q(Qt)
+    );
+ 
+    // ---- Clock generation: 10 time-unit period ----
+    initial clk = 0;
+    always #5 clk = ~clk;
+ 
+    initial begin
+        // ---- VCD dump setup ----
+        $dumpfile("dff_tff.vcd");   // name of the VCD file to be generated
+        $dumpvars(0, tb5);            // dump all signals in this testbench hierarchy
+ 
+        $monitor("Time=%0t rst=%b clk=%b | D=%b Qd=%b | T=%b Qt=%b",
+                  $time, rst, clk, D, Qd, T, Qt);
+ 
+        // ---- Apply asynchronous reset ----
+        rst = 1; D = 0; T = 0;
+        #7  rst = 0;
+ 
+        // ---- Apply test vectors on successive clock edges ----
+        @(negedge clk); D = 1; T = 1;
+        @(negedge clk); D = 0; T = 1;
+        @(negedge clk); D = 1; T = 0;
+        @(negedge clk); D = 0; T = 0;
+        @(negedge clk); D = 1; T = 1;
+        @(negedge clk); D = 1; T = 1;
+ 
+        // ---- Apply reset again mid-simulation ----
+        @(negedge clk); rst = 1;
+        @(negedge clk); rst = 0; D = 1; T = 1;
+ 
+        #20 $finish;
+    end
+endmodule
 
 
 
@@ -78,6 +131,9 @@ Q(next) = T ⊕ Q   (T Flip-Flop)
 The design was compiled and simulated using Synopsys VCS, and the functionality was verified using DVE waveform analysis, matching the expected truth table.
 
 **## Output**
+<img width="1917" height="1016" alt="exper5 1st" src="https://github.com/user-attachments/assets/18368bd7-d126-41f5-8114-2593fe98e217" />
+<img width="1917" height="1016" alt="experiment 5 2nd" src="https://github.com/user-attachments/assets/554c4fce-b8f3-4c28-84bb-7a8e75d140a0" />
+
 
 
 ## Viva-Voce Questions
